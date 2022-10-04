@@ -12,7 +12,7 @@ t = [-10:10];
 sgf = sign(t).*exp(-sigma*abs(t));
 ghrgb = convn(img, sgf,'same').*ch;
 gvrgb = convn(img, sgf','same').*cv;
-lambda = [0.1, 0.1, 0.1]./3;
+lambda = [2, 2, 2]./3;
 
 r_cnt = 0;
 for m = 1:sz(1)
@@ -71,7 +71,7 @@ for m = 1:sz(1)
                 m_n_list(ref_point,:) = [new_mean, new_num];
             case 2  % combine one region to another
                 new_num = m_n_list(ref_point,end) + m_n_list(replace_point,end) + 1;
-                new_mean = (m_n_list(ref_point,1:3).*m_n_list(ref_point,end) + m_n_list(replace_point,1:3).*m_n_list(ref_point,end) + pixel) / new_num;
+                new_mean = (m_n_list(ref_point,1:3).*m_n_list(ref_point,end) + m_n_list(replace_point,1:3).*m_n_list(replace_point,end) + pixel) / new_num;
                 m_n_list(ref_point,:) = [new_mean, new_num];
                 m_n_list(replace_point,:) = zeros(1,4);
                 R(R == replace_point) = ref_point;
