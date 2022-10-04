@@ -8,7 +8,7 @@ R = zeros(size(img));
 m_n_list = zeros(0,2); %A: 1, B: 2
 init = true;
 % edge finding with sign gaussian filter
-sigma = 100; ch=1; cv=1;
+sigma = 10; ch=1; cv=100;
 t = [-10:10];
 sgf = sign(t).*exp(-sigma*abs(t));
 gh = conv2(img, sgf,'same').*ch;
@@ -24,7 +24,7 @@ for m = 1:sz(1)
         pixel = img(m,n); 
         updiff = 0; leftdiff = 0; gradUpDiff = 0; gradLeftDiff = 0;
         if n > 1
-            leftdiff = pixel - m_n_list(R(m,n-1),1);  gradLeftDiff = abs(leftdiff)+abs(gh(m,n));
+            leftdiff = pixel - m_n_list(R(m,n-1),1);  gradLeftDiff = abs(leftdiff)+abs(gh(m,n))*lambda;
             if gradLeftDiff <= th
                 col_combine = true;
             end
