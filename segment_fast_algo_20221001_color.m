@@ -97,7 +97,7 @@ for i = 1:length(index)
         u = u(m_n_list(u,2) > min_pixel);
     end
 %     [min_dist,u_index]=min((abs(mean_num_list(index(i),1) - mean_num_list(u,1))./sqrt(mean_num_list(u,2))));
-    [min_dist,u_index]=min(mean(abs(m_n_list(index(i),1:3) - m_n_list(u,1:3))),2));
+    [min_dist,u_index]=min(mean(abs(m_n_list(index(i),1:3) - m_n_list(u,1:3)),2));
     % update mean, num, region
     region_index = u(u_index(1));
     new_num = m_n_list(region_index,end) + m_n_list(index(i),end);
@@ -116,4 +116,5 @@ for i = 1:r_cnt
 end
 imgout = cat(3, rlayer,blayer);
 imgout = cat(3, imgout,glayer);
+imgout = uint8(imgout);
 imshow(imgout);
