@@ -8,11 +8,11 @@ R = zeros(size(img));
 m_n_list = zeros(0,2); %A: 1, B: 2
 init = true;
 % edge finding with sign gaussian filter
-sigma = 20;
+sigma = 100; ch=1; cv=1;
 t = [-10:10];
 sgf = sign(t).*exp(-sigma*abs(t));
-gh = conv2(img, sgf,'same');
-gv = conv2(img, sgf','same');
+gh = conv2(img, sgf,'same').*ch;
+gv = conv2(img, sgf','same').*cv;
 lambda = 0.1;
 
 sz = size(img);
