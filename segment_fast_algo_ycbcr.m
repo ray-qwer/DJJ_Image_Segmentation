@@ -1,18 +1,21 @@
-img = double(imread("lena_color.png"));
+img = imread("lena_color.png");
+img = double(rgb2ycbcr(img));
+% threshold need to be modified
+% diff equation is not the same
 tic
 % fast algorithm
-th = 30;
+th = 10;
 sz = size(img);
 min_pixel = ceil(512*512/1000);
 R = zeros(sz(1:2));
 m_n_list = zeros(0,4); %A: 1, B: 2
 % edge finding with sign gaussian filter
-sigma = 1; ch=10; cv=1;
+sigma = 1; ch=0; cv=0;
 t = [-10:10];
 sgf = sign(t).*exp(-sigma.*abs(t));
 ghrgb = convn(img, sgf,'same').*ch;
 gvrgb = convn(img, sgf','same').*cv;
-lambda = [0.3, 0.3, 0.3]./3;
+lambda = [0.1, 0.4, 0.4]./3;
 
 r_cnt = 0;
 for m = 1:sz(1)
@@ -117,4 +120,5 @@ end
 imgout = cat(3, rlayer,blayer);
 imgout = cat(3, imgout,glayer);
 imgout = uint8(imgout);
+imgout = ycbcr2rgb(imgout);
 imshow(imgout);
