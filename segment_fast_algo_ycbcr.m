@@ -4,18 +4,20 @@ img = double(rgb2ycbcr(img));
 % diff equation is not the same
 tic
 % fast algorithm
-th = 10;
+th = 25;
 sz = size(img);
 min_pixel = ceil(512*512/1000);
 R = zeros(sz(1:2));
 m_n_list = zeros(0,4); %A: 1, B: 2
 % edge finding with sign gaussian filter
-sigma = 1; ch=0; cv=0;
+sigma = 1; ch=1; cv=1;
 t = [-10:10];
 sgf = sign(t).*exp(-sigma.*abs(t));
 ghrgb = convn(img, sgf,'same').*ch;
 gvrgb = convn(img, sgf','same').*cv;
-lambda = [0.1, 0.4, 0.4]./3;
+lambda = [0.1, 0.1, 0.1]*8;
+
+diff_factor = [0.5,2,2];
 
 r_cnt = 0;
 for m = 1:sz(1)
@@ -26,14 +28,14 @@ for m = 1:sz(1)
         updiff = 0; leftdiff = 0; gradUpDiff = 0; gradLeftDiff = 0;
         if n > 1
             left_region = R(m,n-1);
-            leftdiff = mean(pixel - m_n_list(left_region,1:3));  gradLeftDiff = abs(leftdiff)+lambda*abs(squeeze(ghrgb(m,n,:)));
+            leftdiff = (pixel - m_n_list(left_region,1:3)).*diff_factor;  gradLeftDiff = sum(abs(leftdiff))*1+lambda*abs(squeeze(ghrgb(m,n,:)));
             if gradLeftDiff <= th
                 col_combine = true;
             end
         end
         if m > 1
             up_region = R(m-1,n);
-            updiff = mean(pixel - m_n_list(up_region,1:3)); gradUpDiff = abs(updiff)+lambda*abs(squeeze(gvrgb(m,n,:)));
+            updiff = (pixel - m_n_list(up_region,1:3)).*diff_factor; gradUpDiff = sum(abs(updiff))*1+lambda*abs(squeeze(gvrgb(m,n,:)));
             if gradUpDiff <= th
                 row_combine = true;
             end
@@ -48,7 +50,7 @@ for m = 1:sz(1)
             if up_region == left_region
                 flag = 1; ref_point = up_region;
             else
-                if abs(updiff - leftdiff) <= th
+                if sum(abs(updiff - leftdiff)) <= th
                     flag = 2; ref_point = min(up_region,left_region); replace_point = max(up_region,left_region);
                 elseif gradUpDiff > gradLeftDiff
                     flag = 1; ref_point = left_region;
@@ -100,7 +102,7 @@ for i = 1:length(index)
         u = u(m_n_list(u,2) > min_pixel);
     end
 %     [min_dist,u_index]=min((abs(mean_num_list(index(i),1) - mean_num_list(u,1))./sqrt(mean_num_list(u,2))));
-    [min_dist,u_index]=min(mean(abs(m_n_list(index(i),1:3) - m_n_list(u,1:3)),2));
+    [min_dist,u_index]=min(sum(abs(((m_n_list(index(i),1:3) - m_n_list(u,1:3)).*diff_factor(1:3))),2));
     % update mean, num, region
     region_index = u(u_index(1));
     new_num = m_n_list(region_index,end) + m_n_list(index(i),end);
