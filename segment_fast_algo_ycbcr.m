@@ -2,22 +2,45 @@ img = imread("lena_color.png");
 img = double(rgb2ycbcr(img));
 % threshold need to be modified
 % diff equation is not the same
-tic
+th = 25; sigma = 1; lambda = [0.1, 0.1, 0.1]; diff_factor = [1, 1.5, 0.5];
+image_name = "lena_cb1.5_1.png";
+genSegImage(img,lambda, sigma, diff_factor, th, image_name);
+% for th = [17:33]
+%     image_name = "lena_th"+th;
+%     genSegImage(img,lambda, sigma, diff_factor, th, image_name );
+% end
+% 
+% th = 25;
+% for diff = [0.5:0.1:1.5]
+%     diff_factor = [diff, 1+(1-diff)/2, 1+(1-diff)/2 ];
+%     image_name = "lena_diff"+diff;
+%     genSegImage(img, lambda, sigma, diff_factor, th, image_name);
+% end
+% 
+% diff = [0.5, 1.25, 1.25];
+% for l = [0.1:0.2:2]
+%     lambda = [l, l, l];
+%     image_name = "lena_l"+l;
+%     genSegImage(img, lambda, sigma, diff_factor, th, image_name);
+% end
+
+function genSegImage(img, lambda, sigma, diff_factor, th, image_name)
 % fast algorithm
-th = 25;
+% th = 25;
 sz = size(img);
-min_pixel = ceil(512*512/1000);
+min_pixel = ceil(512*512/500);
 R = zeros(sz(1:2));
 m_n_list = zeros(0,4); %A: 1, B: 2
 % edge finding with sign gaussian filter
-sigma = 1; ch=1; cv=1;
+% sigma = 1; 
+ch=1; cv=1;
 t = [-10:10];
 sgf = sign(t).*exp(-sigma.*abs(t));
 ghrgb = convn(img, sgf,'same').*ch;
 gvrgb = convn(img, sgf','same').*cv;
-lambda = [0.1, 0.1, 0.1]*8;
+% lambda = [0.1, 0.1, 0.1]*8;
 
-diff_factor = [0.5,2,2];
+% diff_factor = [0.5,1,1];
 
 r_cnt = 0;
 for m = 1:sz(1)
@@ -85,7 +108,7 @@ for m = 1:sz(1)
         end
     end
 end
-toc
+
 t = m_n_list(:,end);
 index = find(t<min_pixel & t >0);
 neighbor_matrix = [0,1,0;1,0,1;0,1,0];
@@ -102,7 +125,7 @@ for i = 1:length(index)
         u = u(m_n_list(u,2) > min_pixel);
     end
 %     [min_dist,u_index]=min((abs(mean_num_list(index(i),1) - mean_num_list(u,1))./sqrt(mean_num_list(u,2))));
-    [min_dist,u_index]=min(sum(abs(((m_n_list(index(i),1:3) - m_n_list(u,1:3)).*diff_factor(1:3))),2));
+    [~,u_index]=min(sum(abs(((m_n_list(index(i),1:3) - m_n_list(u,1:3)).*diff_factor(1:3))),2));
     % update mean, num, region
     region_index = u(u_index(1));
     new_num = m_n_list(region_index,end) + m_n_list(index(i),end);
@@ -123,4 +146,6 @@ imgout = cat(3, rlayer,blayer);
 imgout = cat(3, imgout,glayer);
 imgout = uint8(imgout);
 imgout = ycbcr2rgb(imgout);
-imshow(imgout);
+imwrite(imgout,"./fast_algo_image/"+image_name+".png");
+end
+% imshow(imgout);
