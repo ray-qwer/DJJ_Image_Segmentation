@@ -2,21 +2,19 @@ img = imread("lena_color.png");
 img = double(rgb2ycbcr(img));
 % threshold need to be modified
 % diff equation is not the same
-th = 25; sigma = 1; lambda = [0.1, 0.1, 0.1]; diff_factor = [1, 1.5, 0.5];
-image_name = "lena_cb1.5_1.png";
+th = 25; sigma = 1; lambda = [0.1, 0.1, 0.1]; diff_factor = [1, 0.5, 1.5];
+image_name = "lena_cr1.5_1";
 genSegImage(img,lambda, sigma, diff_factor, th, image_name);
 % for th = [17:33]
-%     image_name = "lena_th"+th;
-%     genSegImage(img,lambda, sigma, diff_factor, th, image_name );
+%      image_name = "lena_th"+th;
+%      genSegImage(img,lambda, sigma, diff_factor, th, image_name );
 % end
-% 
 % th = 25;
 % for diff = [0.5:0.1:1.5]
 %     diff_factor = [diff, 1+(1-diff)/2, 1+(1-diff)/2 ];
 %     image_name = "lena_diff"+diff;
 %     genSegImage(img, lambda, sigma, diff_factor, th, image_name);
 % end
-% 
 % diff = [0.5, 1.25, 1.25];
 % for l = [0.1:0.2:2]
 %     lambda = [l, l, l];
