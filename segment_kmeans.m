@@ -3,7 +3,7 @@ img = double(rgb2ycbcr(img));
 
 % initial k point 
 sz = size(img);
-k = 500;
+k = 30;
 Knums = randperm(prod(sz(1:2)),k);
 Knums_x = mod(Knums-1,sz(1))+1; Knums_y = ceil(Knums/sz(1));
 lambda1 = 0.3; lambda2 = 0.6;
@@ -19,7 +19,7 @@ for repeat = 1:15
     % dist
     d = zeros([sz(1:2),k]);
     for i = 1:k
-        d(:,:,i) = sqrt(lambda1.*((M-kmeans(i,1)).^2+(N-kmeans(i,2)).^2)+ lambda2.*( (Y - kmeans(i,3)).^2+ ...
+        d(:,:,i) = sqrt(lambda1.*((N-kmeans(i,1)).^2+(M-kmeans(i,2)).^2)+ lambda2.*( (Y - kmeans(i,3)).^2+ ...
             (Cb- kmeans(i,4)).^2 + (Cr-kmeans(i,5)).^2));
     end
     
@@ -34,7 +34,7 @@ for repeat = 1:15
     % update mean
     for i = 1:k
         loc = find(R == i);
-        kmeans(i,:) = [mean(M(loc)), mean(N(loc)), mean(Y(loc)), mean(Cb(loc)), mean(Cr(loc))];
+        kmeans(i,:) = [mean(N(loc)), mean(M(loc)), mean(Y(loc)), mean(Cb(loc)), mean(Cr(loc))];
     end
 end
 % paintiing

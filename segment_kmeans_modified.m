@@ -38,14 +38,14 @@ Y = img(:,:,1); Cb = img(:,:,2); Cr = img(:,:,3);
 % size for checking area
 dist_x = round(sz(1)/(k^0.25));
 dist_y = round(sz(2)/(k^0.25));
-
+% dist_x = 100; dist_y = 100;
 d = ones([sz(1:2),k])*inf;
 for repeat = 1:15
     % dist
     for i = 1:k
         c_x = round(kmeans(i,1)) - (-dist_x:dist_x); c_x = c_x(c_x > 0 & c_x <= sz(1));
         c_y = round(kmeans(i,2)) - (-dist_y:dist_y); c_y = c_y(c_y > 0 & c_y <= sz(2));
-        d(c_x,c_y,i) = sqrt(lambda1.*((M(c_x,c_y)-kmeans(i,1)).^2+(N(c_x,c_y)-kmeans(i,2)).^2)+ lambda2.*( (Y(c_x,c_y) - kmeans(i,3)).^2+ ...
+        d(c_x,c_y,i) = sqrt(lambda1.*((N(c_x,c_y)-kmeans(i,1)).^2+(M(c_x,c_y)-kmeans(i,2)).^2)+ lambda2.*( (Y(c_x,c_y) - kmeans(i,3)).^2+ ...
             (Cb(c_x,c_y)- kmeans(i,4)).^2 + (Cr(c_x,c_y)-kmeans(i,5)).^2));
     end
     
@@ -60,15 +60,19 @@ for repeat = 1:15
     % update mean
     for i = 1:k
         loc = find(R == i);
-        kmeans(i,:) = [mean(M(loc)), mean(N(loc)), mean(Y(loc)), mean(Cb(loc)), mean(Cr(loc))];
+        kmeans(i,:) = [mean(N(loc)), mean(M(loc)), mean(Y(loc)), mean(Cb(loc)), mean(Cr(loc))];
     end
 end
 
 % paintiing
-Y_out = zeros(sz(1:2)); Cb_out = Y_out; Cr_out = Y_out;
+Y_out = zeros(sz(1:2)); Cb_out = zeros(sz(1:2)); Cr_out = zeros(sz(1:2));
 for i = 1:k
     loc = find(R == i);
     Y_out(loc) = kmeans(i,3); Cb_out(loc) = kmeans(i,4); Cr_out(loc) = kmeans(i,5);
 end
 imgout = ycbcr2rgb(uint8(cat(3,Y_out,Cb_out,Cr_out)));
 imshow(imgout);
+% hold on;
+% plot(round(kmeans(:,1)),round(kmeans(:,2)),"*r");
+% plot(Knums_x,Knums_y,"*b");
+% hold off;
