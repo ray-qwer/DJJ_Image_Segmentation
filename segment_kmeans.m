@@ -3,9 +3,9 @@ img = double(rgb2ycbcr(img));
 
 % initial k point 
 sz = size(img);
-k = 30;
+k = 500;
 Knums = randperm(prod(sz(1:2)),k);
-Knums_x = mod(Knums,sz(1)); Knums_y = ceil(Knums/sz(1));
+Knums_x = mod(Knums-1,sz(1))+1; Knums_y = ceil(Knums/sz(1));
 lambda1 = 0.3; lambda2 = 0.6;
 [M,N] = meshgrid([1:sz(1)],[1:sz(2)]);
 kmeans = zeros(k,5);    % 5: m, n, y, cb, cr
@@ -45,5 +45,3 @@ for i = 1:k
 end
 imgout = ycbcr2rgb(uint8(cat(3,Y_out,Cb_out,Cr_out)));
 imshow(imgout);
-imwrite(imgout,"./kmeans/lena_iter15_k30.png");
-
