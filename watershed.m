@@ -3,7 +3,7 @@ img = double(rgb2ycbcr (img));
 
 % some var
 sz = size(img);
-Q = 3;
+Q = 5;
 
 % gradient 
 %   filter initial
@@ -69,15 +69,19 @@ end
 imgout1 = label2rgb(R);
 figure(1);
 imshow(imgout1);
-r_layer = zeros(sz(1:2)); g_layer = r_layer; b_layer = r_layer;
-r_img = img(:,:,1); g_img = img(:,:,2); b_img = img(:,:,3);
-for i = 1:max(R(:))
-    k = find(R == i);
-    r_layer(k) = mean(r_img(k)); g_layer(k) = mean(g_img(k)); b_layer(k) = mean(b_img(k));
-end
+edge = (R~=R(:,[1,1:sz(1)-1]))|(R~=R([1,1:sz(2)-1],:));
 figure(2);
-imgout2 = uint8(cat(3,r_layer,g_layer,b_layer));
-imshow(ycbcr2rgb (imgout2));
+imgout2 = rgb2gray(ycbcr2rgb(uint8(img)));
+imshow(uint8(255*edge + double(imgout2)*0.7));
+% r_layer = zeros(sz(1:2)); g_layer = r_layer; b_layer = r_layer;
+% r_img = img(:,:,1); g_img = img(:,:,2); b_img = img(:,:,3);
+% for i = 1:max(R(:))
+%     k = find(R == i);
+%     r_layer(k) = mean(r_img(k)); g_layer(k) = mean(g_img(k)); b_layer(k) = mean(b_img(k));
+% end
+% figure(2);
+% imgout2 = uint8(cat(3,r_layer,g_layer,b_layer));
+% imshow(ycbcr2rgb (imgout2));
 function Neighbor =findNeighbor(i,sz)
     Neighbor = [];
     x = mod(i-1,sz(1))+1;
