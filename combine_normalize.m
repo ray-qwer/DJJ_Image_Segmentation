@@ -13,24 +13,28 @@ seg1 = seg;
 % 0 <= g <= 255**(1/2)
 % 0 <= Y <= 255;    0 <= Cb <= 255; 0 <= Cr <= 255
 % 0 <= H < 360;     0 <= S <= 1;    0 <= L <= 255
-weight = [1/3, 1/10, 1/10,  1/40, 10, 1/3, 0.3, 0.3, 0.3]; 
-score = 40;
+weight = [1, 0.8, 0.8,  1/30, 1, 1, 1.2, 0.8, 0.8]; 
 
+YCbCrImg = double(rgb2ycbcr(img));
 % gradient for edge detection
 sigma = 1;
 t = [-10:10];
 sgf = sign(t).*exp(-sigma.*abs(t));
-gx = convn(double(img), sgf','same');
-gy = convn(double(img), sgf,'same');
+gx = convn(YCbCrImg, sgf','same');
+gy = convn(YCbCrImg, sgf,'same');
 g = (sqrt(gx.^2 + gy.^2));
 % seperate g to 3 layer
 g1 = g(:,:,1); g2 = g(:,:,2); g3 = g(:,:,3);
-
+g1 = normalize(g1); g2 = normalize(g2); g3 = normalize(g3);
+g1 = g1 - min(g1(:)); g2 = g2 - min(g2(:)); g3 = g3 - min(g3(:));
 % Y, cb, cr
 YCbCr = double(rgb2ycbcr(img));
 Y = YCbCr(:,:,1); Cb = YCbCr(:,:,2); Cr = YCbCr(:,:,3);
+Y = normalize(Y); Cb = normalize(Cb); Cr = normalize(Cr);
 % HSL
 [H,S,L] = rgb2hsl(img);
+S = normalize(S); L = normalize(L);
+score = 3+mean(g1(:))+mean(g2(:))+mean(g3(:));
 
 maxLabel = max(seg(:)); % the label is start from zero
 for i = 0:maxLabel
@@ -61,19 +65,20 @@ imgout = uint8(255*edge + double(img)*0.7);
 % imshow(imgout);
 
 % save file
-fileID = fopen("./combine/recordNum.txt","r");
+fileID = fopen("./combine/recordNum_n.txt","r");
 if fileID ~= -1
     picNum = fscanf(fileID, "%d")+1;
+    fclose(fileID);
 else
     picNum = 1;
 end
-fclose(fileID);
 
-imwrite(imgout, "./combine/"+picNum+".png");
-fileID = fopen("./combine/recordNum.txt","w");
+
+imwrite(imgout, "./combine/n"+picNum+".png");
+fileID = fopen("./combine/recordNum_n.txt","w");
 fprintf(fileID,"%d\n",picNum);
 fclose(fileID);
-writematrix([weight,score],"./combine/record.csv",'WriteMode','append');
+writematrix([weight,score],"./combine/record_n.csv",'WriteMode','append');
 
 
 function [edge, adj] = findEdgeRegion(seg, region, channel)
