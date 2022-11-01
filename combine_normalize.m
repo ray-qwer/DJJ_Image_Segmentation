@@ -1,4 +1,4 @@
-img = imread("./baboon.png");
+img = imread("./peppers.jpg");
 gray_img = double(rgb2gray(img));
 sz = size(img);
 [h,w] = size(gray_img);
@@ -13,7 +13,7 @@ seg1 = seg;
 % 0 <= g <= 255**(1/2)
 % 0 <= Y <= 255;    0 <= Cb <= 255; 0 <= Cr <= 255
 % 0 <= H < 360;     0 <= S <= 1;    0 <= L <= 255
-weight = [1, 0.8, 0.8,  1/30, 1, 1, 1.2, 0.8, 0.8]; 
+weight = [1, 0.8, 0.8,  1/20, 1, 1, 1.2, 0.8, 0.8]; 
 
 YCbCrImg = double(rgb2ycbcr(img));
 % gradient for edge detection
