@@ -1,14 +1,14 @@
-img = imread("./peppers.jpg");
+img = imread("./baboon.png");
 gray_img = double(rgb2gray(img));
 sz = size(img);
 [h,w] = size(gray_img);
-load("peppers.mat","seg");
-% nC = ceil(w*h/200);
-% tic;
-% seg = mex_ers(gray_img,nC);
-% toc;
-% save("peppers.mat",'seg');
-% seg1 = seg;
+% load("baboon.mat","seg");
+nC = ceil(w*h/200);
+tic;
+seg = mex_ers(gray_img,nC);
+toc;
+save("peppers.mat",'seg');
+seg1 = seg;
 % edge=(seg~=seg(:,[1,1:w-1])) | (seg~=seg([1,1:h-1],:));
 
 % parameter to modify
@@ -69,13 +69,13 @@ Lap1 = lap(:,:,1); Lap2 = lap(:,:,2); Lap3 = lap(:,:,3);
 
 rough_fig = zeros(sz(1:2));
 maxLabel = max(seg(:)); % the label is start from zero
-for i = 0:maxLabel
-    r_i = (seg == i);
-    if mean(gx1(r_i)) > smooth_th || mean(gy1(r_i)) > smooth_th
-        rough_fig(r_i) = 255;
-    end
-end
-
+% for i = 0:maxLabel
+%     r_i = (seg == i);
+%     if mean(gx1(r_i)) > smooth_th || mean(gy1(r_i)) > smooth_th
+%         rough_fig(r_i) = 255;
+%     end
+% end
+for loop = 1:1
 for i = 0:maxLabel
     % combination
     [region_edge, region_adj] = findEdgeRegion(seg, i, 4);
@@ -116,7 +116,7 @@ for i = 0:maxLabel
     end
     seg(ismember(seg,combine_region)) = i;
 end
-
+end
 edge=(seg~=seg(:,[1,1:w-1])) | (seg~=seg([1,1:h-1],:));
 figure(1);
 imgout = uint8(255*edge + double(img)*0.7);
