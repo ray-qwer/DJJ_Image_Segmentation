@@ -1,14 +1,15 @@
-img = imread("./baboon.png");
+img_name = "baboon";
+img = imread("./"+img_name+".png");
 gray_img = double(rgb2gray(img));
 sz = size(img);
 [h,w] = size(gray_img);
-% load("baboon.mat","seg");
+load(img_name+".mat","seg");
 nC = ceil(w*h/200);
-tic;
-seg = mex_ers(gray_img,nC);
-toc;
-save("peppers.mat",'seg');
-seg1 = seg;
+% tic;
+% seg = mex_ers(gray_img,nC);
+% toc;
+% save("peppers.mat",'seg');
+% seg1 = seg;
 % edge=(seg~=seg(:,[1,1:w-1])) | (seg~=seg([1,1:h-1],:));
 
 % parameter to modify
@@ -23,15 +24,19 @@ texture_factor_smooth = 1;
 lap_factor_smooth = 1.5;
 edge_factor_smooth = 0.6;
 texture_factor_rough = 1;
-lap_factor_rough = 0.5;
-edge_factor_rough = 0.5;    
+lap_factor_rough = 0.2;
+edge_factor_rough = 0.2;    
 smooth_th = 0.45;
 alpha = 0.4;
-score_smooth = 5.3;
-score_rough = 6.2;
-w_general = [1, 0.8, 0.8,  1/40, 0.8, 1,];
+score_smooth = 7;
+score_rough = 6;
+w_general = [1, 0.8, 0.8,  1/30, 0.8, 1,];
 w_rough = [w_general,ones(1,3)*edge_factor_rough, ones(1,3)*lap_factor_rough, ones(1,6)*texture_factor_rough]; 
 w_smooth = [w_general,ones(1,3)*edge_factor_smooth, ones(1,3)*lap_factor_smooth, ones(1,6)*texture_factor_smooth];
+score_weight = [-prod(sz(1:2))/nC,  ];
+weight = w_smooth;
+% score = score_smooth;
+
 YCbCrImg = double(rgb2ycbcr(img));
 % gradient for edge detection
 sigma = 1;
@@ -75,6 +80,12 @@ maxLabel = max(seg(:)); % the label is start from zero
 %         rough_fig(r_i) = 255;
 %     end
 % end
+
+% score base
+b1 = prod(sz(1:2))/nC* 5;
+b2 = 0.05;
+b3 = 0.45;
+img_size = prod(sz(1:2));
 for loop = 1:1
 for i = 0:maxLabel
     % combination
@@ -82,17 +93,25 @@ for i = 0:maxLabel
     combine_region = [];
     r_i = (seg == i);
     score = score_smooth;
-    if mean(gx1(r_i)) < smooth_th && mean(gy1(r_i)) < smooth_th
-        weight = w_smooth;
-    else
-        weight = w_rough;
-        score = score_rough;
+%     if mean(gx1(r_i)) < smooth_th && mean(gy1(r_i)) < smooth_th
+%         weight = w_smooth;
+%     else
+%         weight = w_rough;
+%         score = score_rough;
+%     end
+    area_i = nnz(r_i);
+    if (area_i == 0)
+        continue;
     end
+    boundary_i = getBoundariesLength2D(r_i);
+    
     for j = region_adj
         edge_adj = (region_edge & seg == j);
         % factor to check if combine
         % e: edge, rd: region diff
         r_j = (seg == j);
+        
+        
         e_g1 = mean(g1(edge_adj)); e_g2 = mean(g2(edge_adj)); e_g3 = mean(g3(edge_adj));    % -255 <= g <= 255
         e_lap1 = mean(Lap1(edge_adj)); e_lap2 = mean(Lap2(edge_adj)); e_lap3 = mean(Lap3(edge_adj));
         rd_y  = abs(mean(Y(r_i)) -  mean(Y(r_j)));     % 0 <= Y <= 255
@@ -108,7 +127,27 @@ for i = 0:maxLabel
         rd_gy1 = abs(mean(gy1(r_i))^alpha - mean(gy1(r_j))^alpha);
         rd_gy2 = abs(mean(gy2(r_i))^alpha - mean(gy2(r_j))^alpha);
         rd_gy3 = abs(mean(gy3(r_i))^alpha - mean(gy3(r_j))^alpha);
-         
+
+        % 20221114 area and edge feature; adjust threshold
+        boundary_j = getBoundariesLength2D(r_j);
+        area_j = nnz(r_j);
+        boundary_ij = nnz(edge_adj);
+        t1 = min(area_i, area_j);
+        t2 = boundary_ij / min(boundary_i, boundary_j);
+        gA = mean(gx1(r_i))^2 + mean(gy1(r_i))^2;
+        gB = mean(gx1(r_j))^2 + mean(gy1(r_j))^2;
+        t3 = min(gA^ alpha, gB^ alpha);
+        score_r = 1 - (exp(-t1/img_size))/20 + (1-t2)/10 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
+%         - (1-exp(-t1/img_size))/10 + (1-t2)/10 - (t3-b3)/40 + abs(t3-b3)/40 
+%         if (t3 > b3) 
+% %             score = score_rough;
+%             weight = w_rough;
+%         else 
+% %             score = score_smooth;
+%             weight = w_smooth;
+%         end
+        score = score_smooth* score_r;
+        % 
         if score > sum(weight.*[rd_y,rd_Cb, rd_Cr, rd_H, rd_S, rd_L, e_g1, e_g2, e_g3, e_lap1, e_lap2, e_lap3, ...
                 rd_gx1, rd_gx2, rd_gx3, rd_gy1, rd_gy2, rd_gy3])
             combine_region = [combine_region, j];
