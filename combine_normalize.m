@@ -1,4 +1,4 @@
-img_name = "baboon";
+img_name = "lena_color";
 img = imread("./"+img_name+".png");
 gray_img = double(rgb2gray(img));
 sz = size(img);
@@ -21,7 +21,7 @@ nC = ceil(w*h/200);
 % texture_factor = 20; baboon
 
 texture_factor_smooth = 1;
-lap_factor_smooth = 1.5;
+lap_factor_smooth = 1.3;
 edge_factor_smooth = 0.6;
 texture_factor_rough = 1;
 lap_factor_rough = 0.2;
@@ -84,7 +84,7 @@ maxLabel = max(seg(:)); % the label is start from zero
 % score base
 b1 = prod(sz(1:2))/nC* 5;
 b2 = 0.05;
-b3 = 0.45;
+b3 = 0.55;
 img_size = prod(sz(1:2));
 for loop = 1:1
 for i = 0:maxLabel
@@ -137,7 +137,8 @@ for i = 0:maxLabel
         gA = mean(gx1(r_i))^2 + mean(gy1(r_i))^2;
         gB = mean(gx1(r_j))^2 + mean(gy1(r_j))^2;
         t3 = min(gA^ alpha, gB^ alpha);
-        score_r = 1 - (exp(-t1/img_size))/20 + (1-t2)/10 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
+        score_r = 1 + (exp(-t1/img_size))/5  + (t2)/10 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
+%         score_r = 1 - (exp(-t1/img_size))/20 + (1-t2)/10 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
 %         - (1-exp(-t1/img_size))/10 + (1-t2)/10 - (t3-b3)/40 + abs(t3-b3)/40 
 %         if (t3 > b3) 
 % %             score = score_rough;
