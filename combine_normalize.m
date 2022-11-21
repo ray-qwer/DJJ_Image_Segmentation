@@ -28,7 +28,7 @@ lap_factor_rough = 0.2;
 edge_factor_rough = 0.2;    
 smooth_th = 0.45;
 alpha = 0.4;
-score_smooth = 7;
+score_smooth = 5;
 score_rough = 6;
 w_general = [1, 0.8, 0.8,  1/30, 0.8, 1,];
 w_rough = [w_general,ones(1,3)*edge_factor_rough, ones(1,3)*lap_factor_rough, ones(1,6)*texture_factor_rough]; 
@@ -63,7 +63,7 @@ Y = normalize(Y); Cb = normalize(Cb); Cr = normalize(Cr);
 [H,S,L] = rgb2hsl(img);
 S = normalize(S); L = normalize(L);
 % lap
-lap = abs(laplacian(img, 2.5));
+lap = abs(laplacian(img, 2.5,t));
 % lap(lap < 0) = 0;
 % Lap1 = normalize(lap(:,:,1)); Lap2 = normalize(lap(:,:,2)); Lap3 = normalize(lap(:,:,3));
 lap = lap .* (10/255);

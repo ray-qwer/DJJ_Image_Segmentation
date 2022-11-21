@@ -1,5 +1,6 @@
 clear;
-load("lena_color.mat");
+img_name = "baboon";
+load(img_name+".mat");
 
 sz = size(img);
 h = sz(1); w = sz(2);
@@ -9,20 +10,22 @@ texture_factor = 1;
 lap_factor = 1.3;
 edge_factor = 0.6;
 
-score = 7;
+alpha = 0.4;
+score = 5;
+b3 = 0.55;
 % score_rough = 6;
 
 w_general = [1, 0.8, 0.8,  1/30, 0.8, 1,];
 weight = [w_general,ones(1,3)*edge_factor, ones(1,3)*lap_factor, ones(1,6)*texture_factor];
 
 
-YCbCrImg = double(rgb2ycbcr(img));
+YCbCr = double(rgb2ycbcr(img));
 sf_sigma = 1;   % small filter sigma
-lf_sigma = 0.5  % long filter sigma, choose lower than 0.5, i think
+lf_sigma = 0.5;  % long filter sigma, choose lower than 0.5, i think
 sf_t = [-10:10];
 lf_t = [-20:20];
 
-[gx, gy] = gradient_img(YCbCrImg, sf_sigma, sf_t);
+[gx, gy] = gradient_image(YCbCr, sf_sigma, sf_t);
 
 g = (sqrt(gx.^2 + gy.^2));
 % seperate g to 3 layer
@@ -50,7 +53,7 @@ Lap1 = lap(:,:,1); Lap2 = lap(:,:,2); Lap3 = lap(:,:,3);
 
 maxLabel = max(seg(:));
 
-img_size = prod(sz(1:2))
+img_size = prod(sz(1:2));
 
 % first stage
 for i = 0: maxLabel
@@ -104,11 +107,13 @@ end
 
 % long filter applied before 2nd stage
 % updating variables
-score = 6;
+seg1 = seg;
+save(img_name+".mat","seg1","-append");
+score = 5;
 w_general = [1, 0.8, 0.8,  1/30, 0.8, 1,];
 weight = [w_general,ones(1,3)*edge_factor, ones(1,3)*lap_factor, ones(1,6)*texture_factor];
 
-[gx, gy] = gradient_img(YCbCrImg, lf_sigma, lf_t);
+[gx, gy] = gradient_image(YCbCr, lf_sigma, lf_t);
 g = (sqrt(gx.^2 + gy.^2));
 % seperate g to 3 layer
 g1 = g(:,:,1); g2 = g(:,:,2); g3 = g(:,:,3);
@@ -116,6 +121,7 @@ g1 = normalize(g1); g2 = normalize(g2); g3 = normalize(g3);
 gx = abs(gx); gy = abs(gy);
 % gx1 = normalize(gx(:,:,1)); gx2 = normalize(gx(:,:,2)); gx3 = normalize(gx(:,:,3));
 % gy1 = normalize(gy(:,:,1)); gy2 = normalize(gy(:,:,2)); gy3 = normalize(gy(:,:,3));
+
 gx = gx .* (10/255); gy = gy.* (10/255);
 gx1 = gx(:,:,1); gx2 = gx(:,:,2); gx3 = gx(:,:,3);
 gy1 = gy(:,:,1); gy2 = gy(:,:,2); gy3 = gy(:,:,3);
@@ -126,17 +132,17 @@ Lap1 = lap(:,:,1); Lap2 = lap(:,:,2); Lap3 = lap(:,:,3);
 
 % second stage
 for i = 0: maxLabel
-    [region_edge, region_adj] = findEdgeRegion(seg, i, 4);
+    [region_edge, region_adj] = findEdgeRegion(seg1, i, 4);
     combine_region = [];
-    r_i = (seg == i);
+    r_i = (seg1 == i);
     area_i = nnz(r_i);
     if (area_i == 0)
         continue;
     end
     boundary_i = getBoundariesLength2D(r_i);
     for j = region_adj
-        edge_adj = (region_edge & seg == j);
-        r_j = (seg == j);
+        edge_adj = (region_edge & seg1 == j);
+        r_j = (seg1 == j);
         
         % calculate score
         e_g1 = mean(g1(edge_adj)); e_g2 = mean(g2(edge_adj)); e_g3 = mean(g3(edge_adj));    % -255 <= g <= 255
@@ -171,6 +177,13 @@ for i = 0: maxLabel
             combine_region = [combine_region, j];
         end
     end
-    seg(ismember(seg, combine_region)) = i;
+    seg1(ismember(seg1, combine_region)) = i;
 end
-
+edge0=(seg~=seg(:,[1,1:w-1])) | (seg~=seg([1,1:h-1],:));
+figure(1);
+imgout0 = uint8(255*edge0 + double(img)*0.7);
+imshow(imgout0); 
+edge1=(seg1~=seg1(:,[1,1:w-1])) | (seg1~=seg1([1,1:h-1],:));
+figure(2);
+imgout1 = uint8(255*edge1 + double(img)*0.7);
+imshow(imgout1);
