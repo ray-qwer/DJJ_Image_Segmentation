@@ -33,7 +33,6 @@ score_rough = 6;
 w_general = [1, 0.8, 0.8,  1/30, 0.8, 1,];
 w_rough = [w_general,ones(1,3)*edge_factor_rough, ones(1,3)*lap_factor_rough, ones(1,6)*texture_factor_rough]; 
 w_smooth = [w_general,ones(1,3)*edge_factor_smooth, ones(1,3)*lap_factor_smooth, ones(1,6)*texture_factor_smooth];
-score_weight = [-prod(sz(1:2))/nC,  ];
 weight = w_smooth;
 % score = score_smooth;
 
