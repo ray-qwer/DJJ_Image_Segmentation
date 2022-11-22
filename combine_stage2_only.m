@@ -1,4 +1,4 @@
-img_name = "lena_color";
+img_name = "baboon";
 load(img_name+".mat","img");
 load(img_name+".mat","seg1");
 
@@ -11,13 +11,13 @@ h = sz(1); w = sz(2);
 nC = ceil(w*h/200);
 
 texture_factor = 0.5;
-lap_factor = 6;
-edge_factor = 3;
+lap_factor = 4;
+edge_factor = 1;
 alpha = 0.8;
-score = 4.5;
-b3 = 0.55;
+score = 3;
+b3 = 0.6;
 w_general = [1, 0.8, 0.8,  1/50, 0.8, 1,];
-weight = [w_general,ones(1,3)*edge_factor, ones(1,3)*lap_factor, ones(1,6)*texture_factor];
+weight = [w_general,ones(1,3)*edge_factor,ones(1,3)*lap_factor, ones(1,6)*texture_factor];
 
 [gx, gy] = gradient_image(YCbCr, lf_sigma, lf_t);
 g = (sqrt(gx.^2 + gy.^2));
@@ -32,7 +32,7 @@ gx = gx .* (10/255); gy = gy.* (10/255);
 gx1 = gx(:,:,1); gx2 = gx(:,:,2); gx3 = gx(:,:,3);
 gy1 = gy(:,:,1); gy2 = gy(:,:,2); gy3 = gy(:,:,3);
 
-lap = abs(laplacian(img, 10, lf_t));
+lap = abs(laplacian(YCbCr, 10, lf_t));
 lap = lap.* (10/255);
 Lap1 = lap(:,:,1); Lap2 = lap(:,:,2); Lap3 = lap(:,:,3);
 
@@ -90,7 +90,7 @@ for i = 0: maxLabel
         gB = mean(gx1(r_j))^2 + mean(gy1(r_j))^2;
         t3 = min(gA^ alpha, gB^ alpha);
 %         score_r = 1 + (exp(-t1/img_size))/5  + (t2)/10 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
-        score_r = 1 + (t2)/10 +((t3-b3)+ abs(t3-b3))*2.5 -(exp(-rd_H/180))/3;
+        score_r = 1 +t2/20 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
         score_adj = score* score_r;
         if score_adj > sum(weight.*[rd_y,rd_Cb, rd_Cr, rd_H, rd_S, rd_L, e_g1, e_g2, e_g3, e_lap1, e_lap2, e_lap3, ...
             rd_gx1, rd_gx2, rd_gx3, rd_gy1, rd_gy2, rd_gy3])

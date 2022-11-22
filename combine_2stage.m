@@ -1,5 +1,5 @@
 clear;
-img_name = "baboon";
+img_name = "lena_color";
 load(img_name+".mat");
 
 sz = size(img);
@@ -11,7 +11,7 @@ lap_factor = 1.3;
 edge_factor = 0.6;
 
 alpha = 0.4;
-score = 5;
+score = 4;
 b3 = 0.55;
 % score_rough = 6;
 
