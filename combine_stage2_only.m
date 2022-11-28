@@ -1,4 +1,4 @@
-img_name = "lena_color";
+img_name = "baboon";
 load(img_name+".mat","img");
 load(img_name+".mat","seg1");
 
@@ -10,14 +10,14 @@ sz = size(img);
 h = sz(1); w = sz(2);
 nC = ceil(w*h/200);
 
-texture_factor = 0.5;
+texture_factor = 1;
 lap_factor = 2;
-edge_factor = 0.5;
+edge_factor = 0.8;
 alpha = 0.4;
-score = 3.5;
-b3 = 0.5;
-w_general = [2, 0.8, 0.8,  1/20, 1.5, 1.5,];
-weight = [w_general,ones(1,3)*edge_factor,2, 1.5, 1.5, ones(1,6)*texture_factor];
+score = 3.;
+b3 = 0.4;
+w_general = [1.2, 0.8, 0.8,  1/80, 0.8, 1.5,];
+weight = [w_general,ones(1,3)*edge_factor,3, 1.3, 1.3, ones(1,6)*texture_factor];
 
 [gx, gy] = gradient_image(YCbCr, lf_sigma, lf_t);
 g = (sqrt(gx.^2 + gy.^2));
@@ -43,6 +43,7 @@ Y = normalize(Y); Cb = normalize(Cb); Cr = normalize(Cr);
 % HSL
 [H, S, L] = rgb2hsl(img);
 S = normalize(S); L = normalize(L);
+S = S - min(S(:)); L = L - min(L(:));
 
 maxLabel = max(seg1(:));
 img_size = prod(sz(1:2));
@@ -69,7 +70,8 @@ for i = 0: maxLabel
         rd_y  = abs(mean(Y(r_i)) -  mean(Y(r_j)));     % 0 <= Y <= 255
         rd_Cb = abs(mean(Cb(r_i)) - mean(Cb(r_j)));    % 0 <= Cb <= 255
         rd_Cr = abs(mean(Cr(r_i)) - mean(Cr(r_j)));    % 0 <= Cr <= 255
-        rd_H  = min(abs(mean(H(r_i)) -  mean(H(r_j))),abs(mean(H(r_i)) + 360 -  mean(H(r_j)))); 
+        rd_H = min(abs(mean(H(r_i)) -  mean(H(r_j))) , abs(min(mean(H(r_i)), mean(H(r_j)))+360 - max(mean(H(r_i)), mean(H(r_j)))) );
+%         rd_H  = min(abs(mean(H(r_i)) -  mean(H(r_j))),abs(mean(H(r_i)) + 360 -  mean(H(r_j)))); 
         % 0 <= H < 360, but 1 is similar to 359 => min(H1-H2, H1+360-H2)
         rd_S  = abs(mean(S(r_i)) -  mean(S(r_j)));     % 0 <= S <= 1
         rd_L  = abs(mean(L(r_i)) -  mean(L(r_j)));     % 0 <= L <= 255
@@ -90,7 +92,7 @@ for i = 0: maxLabel
         gB = mean(gx1(r_j))^2 + mean(gy1(r_j))^2;
         t3 = min(gA^ alpha, gB^ alpha);
 %         score_r = 1 + (exp(-t1/img_size))/5  + (t2)/10 +((t3-b3)+ abs(t3-b3))*3 -(exp(-rd_H/180))/2;
-        score_r = 1 +t2/20 +((t3-b3)+ abs(t3-b3))*1 -(exp(-rd_H/180))/8;
+        score_r = 1 +t2/40 +((t3-b3)+ abs(t3-b3))*1 -(exp(-rd_H/180))/3 ;
         score_adj = score* score_r;
         if score_adj > sum(weight.*[rd_y,rd_Cb, rd_Cr, rd_H, rd_S, rd_L, e_g1, e_g2, e_g3, e_lap1, e_lap2, e_lap3, ...
             rd_gx1, rd_gx2, rd_gx3, rd_gy1, rd_gy2, rd_gy3])
