@@ -1,3 +1,6 @@
+clear;
+addpath('./function');
+addpath('./stage1_mat');
 img_name = "baboon";
 load(img_name+".mat","img");
 load(img_name+".mat","seg1");

@@ -1,4 +1,6 @@
 clear;
+addpath("image\");
+addpath("stage1_mat\");
 img_name = "lena_color";
 load(img_name+".mat");
 

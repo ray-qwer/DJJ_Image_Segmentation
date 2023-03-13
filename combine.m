@@ -1,4 +1,7 @@
-img = imread("./baboon.png");
+clear;
+addpath("image\");
+addpath("stage1_mat\");
+img = imread("baboon.png");
 gray_img = double(rgb2gray(img));
 sz = size(img);
 [h,w] = size(gray_img);
