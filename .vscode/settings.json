@@ -1,0 +1,8 @@
+{
+    "editor.codeActionsOnSave": {
+    
+    },
+    "matlab.mlintpath":"D:\\matlab2022b\\bin\\win64\\mlint.exe",
+    "matlab.matlabpath":"D:\\matlab2022b\\bin\\matlab.exe",
+    "matlab.linterEncoding": "utf8",
+}
