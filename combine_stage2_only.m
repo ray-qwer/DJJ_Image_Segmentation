@@ -16,7 +16,7 @@ edge_factor = 0.5;
 alpha = 0.4;
 score = 3.5;
 b3 = 0.5;
-w_general = [2, 0.8, 0.8,  1/20, 1.5, 1.5,];
+w_general = [3, 0.8, 0.8,  1/20, 1.5, 1.5,];
 weight = [w_general,ones(1,3)*edge_factor,2, 1.5, 1.5, ones(1,6)*texture_factor];
 
 [gx, gy] = gradient_image(YCbCr, lf_sigma, lf_t);
